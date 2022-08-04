@@ -1,0 +1,69 @@
+# Default values for jenkins-agent.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: jenkins/agent
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+persistence:
+  enabled: true
+  existingClaim: "" 
+  storageClass: 
+  accessMode: ReadWriteMany
+  size: ""
+  annotations: 
+    "helm.sh/resource-policy": keep
+
+env:
+  - name: TZ
+    value: Asia/Singapore
+  - name: JAVA_OPTS
+    value: -Duser.timezone=Asia/Singapore
+  - name: JENKINS_URL
+    value: http://jenkins:8080
+  - name: JENKINS_AGENT_NAME
+    value: default-agent
+  - name: JENKINS_AGENT_WORKDIR
+    value: /home/jenkins/agent
+  - name: JENKINS_SECRET
+    value: JENKINS_SECRET
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

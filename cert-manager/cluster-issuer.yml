@@ -1,0 +1,32 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-staging
+spec:
+  acme:
+    # You must replace this email address with your own.
+    # Let's Encrypt will use this to contact you about expiring
+    # certificates, and issues related to your account.
+    email: <email-address>
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      # Secret resource that will be used to store the account's private key.
+      name: issuer-account-key
+    # Add a single challenge solver, HTTP01 using nginx
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+    # AWS Route53 DNS challenge solver
+    # solvers:
+    # - selector:
+    #     dnsZones:
+    #       - <dns-zone>
+    #   dns01:
+    #     route53:
+    #       region: <region>
+    #       accessKeyID: <access-key-id>
+    #       secretAccessKeySecretRef:
+    #         # kubectl create secret generic acme-route53 --from-file=secret-access-key=[YOU_SECRET_ACCESS_KEY_FILE]
+    #         name: acme-route53
+    #         key: secret-access-key

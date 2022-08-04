@@ -1,0 +1,99 @@
+# Collect Logs using FluentBit
+# FluentBit as a sidecar.  
+# Application manages the log rotation.
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluentbit-config
+data:
+  fluent-bit.conf: |-
+    [SERVICE]
+      Flush        1
+      Daemon       Off
+      Log_Level    debug
+    [INPUT]
+      Name             tail
+      Path             /var/log/*/*.log
+      Path_Key         path
+      Refresh_Interval 5
+      Mem_Buf_Limit    20MB
+      Read_from_Head   True
+      Skip_Long_Lines  On
+      Ignore_Older     1d
+      DB               /var/log/tail-containers-state.db
+      Key              message
+      Tag              raw.*
+    [FILTER]
+      Name record_modifier
+      Match *
+      Record pod          ${HOSTNAME}
+      Record product      ${PRODUCT}
+      Record hostname     ${NODE_NAME}
+      Record namespace    ${POD_NAMESPACE}
+    [OUTPUT]
+      Name  forward
+      Match *
+      Host  ${AGGREGATOR_HOST} # Fluentd as aggregator
+      Port  24224
+      Retry_Limit False
+      # Name            es
+      # Match           *
+      # Host            elasticsearch-master.default.svc.cluster.local
+      # Port            9200
+      # HTTP_User       elastic
+      # HTTP_Passwd     <password>
+      # Logstash_Format On
+      # Retry_Limit     False
+      # tls             On
+      # tls.verify      Off
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: counter
+spec:
+  containers:
+  - name: count
+    image: busybox
+    args:
+    - /bin/sh
+    - -c
+    - >
+      i=0;
+      while true;
+      do
+        echo "$i: $(date)" >> /var/log/counterbit/1.log;
+        echo "$(date) INFO $i" >> /var/log/counterbit/2.log;
+        i=$((i+1));
+        sleep 1;
+      done      
+    volumeMounts:
+    - name: varlog
+      mountPath: /var/log/counterbit/
+  - name: fluentbit
+    image: fluent/fluent-bit:1.7
+    env:
+      - name: PRODUCT
+        value: myapp
+      - name: POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.namespace
+      - name: NODE_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: spec.nodeName
+      - name: AGGREGATOR_HOST
+        value: fluentd.default.svc.cluster.local
+    volumeMounts:
+    - name: varlog
+      mountPath: /var/log/counterbit/
+    - name: config-volume
+      mountPath: /fluent-bit/etc/
+  volumes:
+  - name: varlog
+    emptyDir: {}
+  - name: config-volume
+    configMap:
+      name: fluentbit-config

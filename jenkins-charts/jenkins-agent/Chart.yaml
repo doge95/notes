@@ -1,0 +1,6 @@
+apiVersion: v2
+name: jenkins-agent
+description: Jenkins Agent Helm Chart
+type: application
+version: 1.0.0
+appVersion: "latest-jdk11"
