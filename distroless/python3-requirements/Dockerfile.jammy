@@ -1,0 +1,12 @@
+FROM python:3.10-bullseye as build-venv
+COPY requirements.txt /requirements.txt
+RUN python3 -m venv /venv && \
+/venv/bin/pip install --disable-pip-version-check -r /requirements.txt
+
+FROM ubuntu:jammy-20220301
+RUN apt update && apt install -y --no-install-suggests --no-install-recommends python3
+COPY --from=build-venv /venv /venv
+RUN ln -sf /usr/bin/python3 /venv/bin/python3
+COPY . /app
+WORKDIR /app
+ENTRYPOINT ["/venv/bin/python3", "psutil_example.py"]

@@ -1,0 +1,19 @@
+provisionDataStore:
+  cassandra: false
+storage:
+  type: elasticsearch
+  elasticsearch:
+    scheme: https
+    host: admin-cluster-client.default.svc.cluster.local
+    port: 9200
+    user: elastic
+    password: <password>
+agent:
+  enabled: false
+query: 
+  cmdlineParams:
+    es.tls.skip-host-verify: true
+collector:
+  cmdlineParams:
+    es.tls.skip-host-verify: true
+  

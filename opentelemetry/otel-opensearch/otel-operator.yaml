@@ -1,0 +1,44 @@
+apiVersion: opentelemetry.io/v1alpha1
+kind: OpenTelemetryCollector
+metadata:
+  name: opentelemetry
+spec:
+  mode: sidecar
+  config: |
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+    exporters: 
+      otlp:
+        endpoint: "otel-collector-opentelemetry-collector.default:4317"
+        tls:
+          insecure: true
+        sending_queue:
+          num_consumers: 4
+          queue_size: 100
+        retry_on_failure:
+          enabled: true
+    processors:
+      batch:
+      resource:
+        attributes:
+        - key: k8s.cluster.region
+          value: "region-name"
+          action: insert
+        - key: k8s.cluster.name
+          value: "cluster-name"
+          action: insert
+        - key: k8s.cluster.env
+          value: "environment-name"
+          action: insert
+      memory_limiter:
+        check_interval: 1s
+        limit_percentage: 50
+        spike_limit_percentage: 30
+    service:
+      pipelines:
+        traces/1:
+          receivers: [otlp]
+          processors: [memory_limiter, batch, resource]
+          exporters: [otlp]

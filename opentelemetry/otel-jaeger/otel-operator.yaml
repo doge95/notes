@@ -1,0 +1,22 @@
+apiVersion: opentelemetry.io/v1alpha1
+kind: OpenTelemetryCollector
+metadata:
+  name: opentelemetry
+spec:
+  mode: sidecar
+  config: |
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+    exporters: 
+      jaeger:
+        endpoint: "simplest-collector-headless:14250"
+        tls:
+          insecure: true
+    service:
+      pipelines:
+        traces/1:
+          receivers: [otlp]
+          processors: []
+          exporters: [jaeger]

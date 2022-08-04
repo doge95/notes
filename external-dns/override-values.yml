@@ -1,0 +1,25 @@
+provider: aws
+domainFilters:
+  - myapp.io
+interval: 5m
+triggerLoopOnEvent: true
+sources:
+  - service
+  - ingress
+extraArgs:
+  - --aws-zones-cache-duration=1h
+  # when testing service type - ExternalName
+  # - --service-type-filter=ExternalName
+txtOwnerId: test
+txtPrefix: track-externaldns
+env:
+  - name: AWS_ACCESS_KEY_ID
+    valueFrom:
+      secretKeyRef:
+        key: access-key-id
+        name: externaldns-aws
+  - name: AWS_SECRET_ACCESS_KEY
+    valueFrom:
+      secretKeyRef:
+        key: secret-access-key
+        name: externaldns-aws

@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp-python
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: myapp-python
+  template:
+    metadata:
+      annotations:
+        sidecar.opentelemetry.io/inject: "true"
+      #   instrumentation.opentelemetry.io/inject-python: "true"
+      labels:
+        app.kubernetes.io/name: myapp-python
+    spec:
+      containers:
+      - name: myapp
+        image: flaskapp
+        env:
+          - name: OTEL_TRACES_EXPORTER
+            value: "otlp"
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            value: "http://localhost:4317"
+          - name: OTEL_RESOURCE_ATTRIBUTES
+            value: "service.name=myapp-python"
